@@ -64,3 +64,4 @@ cabal/
 *.eventlog
 .stack-work/
 Main
+.vscode
