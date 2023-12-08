@@ -1,9 +1,7 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# HLINT ignore "Use lambda-case" #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
-import Data.Aeson
-import Data.Text (Text, null)
+import Parser
 
 data Effect = Allow | Deny
   deriving (Show, Eq)
@@ -91,6 +89,5 @@ hasPermission (Policy version stmts) (Action a) (Resource r) = res
 
 main :: IO ()
 main = do
-  let json = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"s3:ListBucket\",\"Resource\":\"arn:aws:s3:::examplebucket\"},{\"Effect\":\"Allow\",\"Action\":\"s3:GetObject\",\"Resource\":\"arn:aws:s3:::examplebucket/*\"}]}"
-  let policy = decode json :: Maybe Policy
-  print $ maybe False validatePolicy policy
+  let json = "{\"foo\": 123, \"bar\": \"baz\"}"
+  print $ runParser jsonValue json
