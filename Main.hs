@@ -89,5 +89,5 @@ hasPermission (Policy version stmts) (Action a) (Resource r) = res
 
 main :: IO ()
 main = do
-  let json = "{\"foo\": 123, \"bar\": \"baz\"}"
+  let json = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"s3:ListBucket\",\"Resource\":\"arn:aws:s3:::examplebucket\"},{\"Effect\":\"Deny\",\"Action\":\"s3:ListBucket\",\"Resource\":\"arn:aws:s3:::examplebucket2\"}]}"
   print $ runParser jsonValue json
