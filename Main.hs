@@ -79,31 +79,30 @@ arrangeStatement xs =
    in case (va', vb, vc) of
         (a, b, c) -> Just (Statement a b c)
 
-arrangePolicy :: String -> [JsonValue] -> Maybe Policy
-arrangePolicy version stmts = do
+arrangePolicy :: JsonValue -> Maybe Policy
+arrangePolicy (JsonObject xs) = do
+  let versionJsonValue = fromMaybe (JsonString "") (extractValueFromKeyValPairs "Version" xs)
+  let (JsonArray stmts) = fromMaybe (JsonArray []) (extractValueFromKeyValPairs "Statement" xs)
+
   let stmts' = [stmt | JsonObject stmt <- stmts]
   let stmts'' = [arrangeStatement stmt | stmt <- stmts']
   let stmts''' = sequenceA stmts''
 
   case stmts''' of
-    Just stmts'''' -> Just (Policy version stmts'''')
+    Just stmts'''' -> arrangePolicy' versionJsonValue (Just stmts'''')
     Nothing -> Nothing
-
-findKey :: String -> [(String, JsonValue)] -> Maybe JsonValue
-findKey key [] = Nothing
-findKey key ((k, v) : xs) =
-  if k == key
-    then Just v
-    else findKey key xs
+  where
+    arrangePolicy' :: JsonValue -> Maybe [Statement] -> Maybe Policy
+    arrangePolicy' (JsonString version) (Just stmts) = Just $ Policy version stmts
+    arrangePolicy' _ _ = Nothing
+arrangePolicy _ = Nothing
 
 main :: IO ()
 main = do
   let json = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"s3:ListBucket\",\"Resource\":\"arn:aws:s3:::examplebucket\"},{\"Effect\":\"Deny\",\"Action\":\"s3:ListBucket\",\"Resource\":\"arn:aws:s3:::examplebucket2\"}]}"
-  let Just (_, JsonObject xs) = runParser jsonValue json
+  let Just (_, parsed) = runParser jsonValue json
 
-  let JsonString version = fromMaybe (JsonString "") (extractValueFromKeyValPairs "Version" xs)
-  let JsonArray stmts = fromMaybe (JsonArray []) (extractValueFromKeyValPairs "Statement" xs)
-  let policy = arrangePolicy version stmts
+  let policy = arrangePolicy parsed
   let isValid = validatePolicy policy
 
   print policy
