@@ -2,7 +2,6 @@ module Parser (JsonValue (..), jsonValue, runParser) where
 
 import Control.Applicative
 import Data.Char
-import Text.XHtml (white)
 
 data JsonValue
   = JsonNull
